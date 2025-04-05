@@ -1,0 +1,33 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+
+
+
+
+# Directory Structure
+├── SnapVis
+│   ├── Assets.xcassets (assets directory)
+│   ├── ContentView.swift (Code for app window)
+│   ├── Preview Content
+│   ├── SnapVis.entitlements
+│   ├── SnapVisApp.swift (the main file which hosts the app window, menubar and settings code)
+│   ├── model (data models)
+│   │   ├── ClaudeAPIClient.swift
+│   │   ├── GeminiAPIClient.swift
+│   │   └── Keyboardshortcuts+Global.swift
+│   ├── view model ()
+│   │   └── ScreencaptureViewModel.swift
+│   └── views (UI code)
+│       ├── menubar
+│       │   └── MenubarContentView.swift
+│       └── settings
+│           ├── KeyboardShortcutSettingsView.swift
+│           ├── MenuBarSettingsView.swift
+│           └── SettingsView.swift
+├── SnapVis.xcodeproj
+└── buildServer.json

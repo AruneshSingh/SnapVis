@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		65C30EC02DA19D10009016F0 /* KeyboardShortcuts in Frameworks */ = {isa = PBXBuildFile; productRef = 65C30EBF2DA19D10009016F0 /* KeyboardShortcuts */; };
+		65C30ED02DA1C138009016F0 /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = 65C30ECF2DA1C138009016F0 /* PostHog */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		65C30E922DA19CAB009016F0 /* SnapVis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SnapVis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				65C30EC02DA19D10009016F0 /* KeyboardShortcuts in Frameworks */,
+				65C30ED02DA1C138009016F0 /* PostHog in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +72,8 @@
 			);
 			name = SnapVis;
 			packageProductDependencies = (
+				65C30EBF2DA19D10009016F0 /* KeyboardShortcuts */,
+				65C30ECF2DA1C138009016F0 /* PostHog */,
 			);
 			productName = SnapVis;
 			productReference = 65C30E922DA19CAB009016F0 /* SnapVis.app */;
@@ -94,6 +103,10 @@
 			);
 			mainGroup = 65C30E892DA19CAB009016F0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				65C30EBE2DA19D10009016F0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */,
+				65C30ECE2DA1C138009016F0 /* XCRemoteSwiftPackageReference "posthog-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 65C30E932DA19CAB009016F0 /* Products */;
 			projectDirPath = "";
@@ -319,6 +332,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		65C30EBE2DA19D10009016F0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/KeyboardShortcuts";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.0;
+			};
+		};
+		65C30ECE2DA1C138009016F0 /* XCRemoteSwiftPackageReference "posthog-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/PostHog/posthog-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.21.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		65C30EBF2DA19D10009016F0 /* KeyboardShortcuts */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 65C30EBE2DA19D10009016F0 /* XCRemoteSwiftPackageReference "KeyboardShortcuts" */;
+			productName = KeyboardShortcuts;
+		};
+		65C30ECF2DA1C138009016F0 /* PostHog */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 65C30ECE2DA1C138009016F0 /* XCRemoteSwiftPackageReference "posthog-ios" */;
+			productName = PostHog;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 65C30E8A2DA19CAB009016F0 /* Project object */;
 }
