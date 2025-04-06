@@ -28,8 +28,11 @@ struct SnapVisApp: App {
     
     var body: some Scene {
         
-        MenuBarExtra("Screenshots", systemImage: "photo.badge.plus", isInserted: $menuBarExtraIsStored){
+        MenuBarExtra(isInserted: $menuBarExtraIsStored){
             MenubarContentView(vm: vm)
+        } label: {
+            // Your menu bar icon
+            Image("menubar_icon")
         }
         
         WindowGroup("Screenshots", id: "main") {
