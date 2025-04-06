@@ -15,9 +15,9 @@ struct MenubarContentView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button("Open App") {
-                openWindow(id: "main")
-            }
+//            Button("Open App") {
+//                openWindow(id: "main")
+//            }
             
             Button("Select area") {
                 vm.takeScreenShot(for: .area)

@@ -240,7 +240,7 @@ class ScreencaptureViewModel: ObservableObject {
         }
         
         // Simple prompt for basic text extraction
-        let prompt = "Extract all the text from this image. Keep the structure and formatting intact. DO NOT add any explanations or additional text."
+        let prompt = "Please analyze this image and extract all the text. Format the text properly maintaining the structure, layout, and indentation. For code snippets, preserve the syntax highlighting and indentation, and remove the line numbers and other UI elements, only keep the actual code. For tables, maintain the tabular format. DO NOT GIVE ANY EXPLANATION OR ANY EXTRA INFORMATION. ONLY THE TEXT CONTENT."
         
         geminiAPIClient.formatImageText(image: image, prompt: prompt) { [weak self] result in
             guard let self = self else { return }
