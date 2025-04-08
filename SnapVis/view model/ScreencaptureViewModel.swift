@@ -85,9 +85,10 @@ class BannerWindowController {
                 window.isOpaque = false
                 window.hasShadow = false
                 window.level = .statusBar
-                window.collectionBehavior = [.canJoinAllSpaces, .stationary]
+                window.collectionBehavior = [.canJoinAllSpaces]
                 window.ignoresMouseEvents = true
                 window.alphaValue = 0.0
+                window.hidesOnDeactivate = false
                 
                 self.window = window
                 
@@ -240,7 +241,12 @@ class ScreencaptureViewModel: ObservableObject {
         }
         
         // Simple prompt for basic text extraction
-        let prompt = "Please analyze this image and extract all the text. Format the text properly maintaining the structure, layout, and indentation. For code snippets, preserve the syntax highlighting and indentation, and remove the line numbers and other UI elements, only keep the actual code. For tables, maintain the tabular format. DO NOT GIVE ANY EXPLANATION OR ANY EXTRA INFORMATION. ONLY THE TEXT CONTENT."
+        let prompt = "Please analyze this image and extract all the text. " +
+                    "Format the text properly maintaining the structure, layout, indentation and heading heirarchy." +
+                    "For code snippets, preserve the syntax highlighting and indentation, and remove the line numbers and other UI elements, only keep the actual code." +
+                    "For diagrams, convert them to mermaid format and give the mermaid code only." +
+                    "For tables, maintain the tabular format. " +
+                    "Do not give any explanation or any extra information. Only the required content."
         
         geminiAPIClient.formatImageText(image: image, prompt: prompt) { [weak self] result in
             guard let self = self else { return }
@@ -414,7 +420,12 @@ class ScreencaptureViewModel: ObservableObject {
         BannerWindowController.shared.showBanner(message: "Formatting with Gemini AI...", isLoading: true)
         
         // Default prompt for formatting text
-        let prompt = "Please analyze this image and extract all the text. Format the text properly maintaining the structure, layout, and indentation. For code snippets, preserve the syntax highlighting and indentation, and remove the UI (line numbers, etc) text, only keep the actual code. For tables, maintain the tabular format. DO NOT GIVE ANY EXPLANATION OR ANY EXTRA INFORMATION. ONLY THE TEXT CONTENT."
+        let prompt = "Please analyze this image and extract all the text. " +
+                    "Format the text properly maintaining the structure, layout, indentation and heading heirarchy." +
+                    "For code snippets, preserve the syntax highlighting and indentation, and remove the line numbers and other UI elements, only keep the actual code." +
+                    "For diagrams, convert them to mermaid format." +
+                    "For tables, maintain the tabular format. " +
+                    "Do not give any explanation or any extra information. Only the text content."
         
         geminiAPIClient.formatImageText(image: image, prompt: prompt) { [weak self] result in
             guard let self = self else { return }
