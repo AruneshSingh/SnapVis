@@ -20,8 +20,15 @@ struct MenubarContentView: View {
 //            }
             
             Button("Select area") {
-                vm.takeScreenShot(for: .area)
+                vm.takeScreenShot(for: .area, processImmediately: true)
             }
+            
+            // Button to re-open the chat window
+            Button("Show Last Response") {
+                vm.showingChatResponseWindow = true // Signal to open the window
+            }
+            // Only enable if there's an image/prompt/response from a previous prompted flow
+            .disabled(vm.promptedScreenshotImage == nil || vm.userPrompt.isEmpty)
             
             Divider()
             

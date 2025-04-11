@@ -36,16 +36,28 @@ class ScreencaptureViewModel: ObservableObject {
     @Published var isFormatting: Bool = false
     @Published var errorMessage: String = ""
     @Published var showError: Bool = false
+    @Published var promptedScreenshotImage: NSImage?
+    
+    // State for the prompted screenshot flow
+    @Published var showingPromptInputWindow: Bool = false
+    @Published var showingChatResponseWindow: Bool = false // We'll use this later
+    @Published var userPrompt: String = ""
+    @Published var apiResponse: String? = nil
+    @Published var isLoadingResponse: Bool = false
     
     private let geminiAPIClient = GeminiAPIClient()
     
     init() {
         KeyboardShortcuts.onKeyUp(for: .screenshotCapture) { [self] in
-            self.takeScreenShot(for: .area)
+            self.takeScreenShot(for: .area, processImmediately: true)
+        }
+        // Add listener for the new shortcut
+        KeyboardShortcuts.onKeyUp(for: .promptedScreenshotCapture) { [self] in
+             self.startPromptedScreenshotFlow()
         }
     }
     
-    func takeScreenShot(for type: ScreenshotTypes) {
+    func takeScreenShot(for type: ScreenshotTypes, processImmediately: Bool) {
         let task = Process()
         task.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
         task.arguments = type.processArguments
@@ -53,14 +65,23 @@ class ScreencaptureViewModel: ObservableObject {
         do {
             try task.run()
             task.waitUntilExit()
-            getImageFromPasteboard()
+            print("[takeScreenShot] Process finished. processImmediately flag: \(processImmediately)")
+            // Only get image from pasteboard if requested
+            if processImmediately {
+                print("[takeScreenShot] Calling getImageFromPasteboard() because processImmediately is true.")
+                getImageFromPasteboard()
+            }
         } catch {
             print("Error: \(error)")
         }
     }
     
     private func getImageFromPasteboard() {
-        guard NSPasteboard.general.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else { return }
+        print("[getImageFromPasteboard] Function called.")
+        guard NSPasteboard.general.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else { 
+            print("[getImageFromPasteboard] Cannot read image types from pasteboard.")
+            return 
+        }
         
         guard let image = NSImage(pasteboard: NSPasteboard.general) else { return }
         
@@ -229,6 +250,78 @@ class ScreencaptureViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.errorMessage = message
             self.showError = true
+        }
+    }
+    
+    // Add new function for the prompted screenshot flow
+    func startPromptedScreenshotFlow() {
+        print("Prompted Screenshot Shortcut Pressed!")
+        // 1. Trigger area screenshot capture (uses pasteboard, DO NOT process immediately)
+        takeScreenShot(for: .area, processImmediately: false)
+        
+        // 2. Get image from pasteboard (similar to getImageFromPasteboard)
+        guard NSPasteboard.general.canReadItem(withDataConformingToTypes: NSImage.imageTypes) else { 
+            print("Error: Could not read image from pasteboard for prompted flow.")
+            return 
+        }
+        guard let image = NSImage(pasteboard: NSPasteboard.general) else { 
+            print("Error: Failed to get image from pasteboard for prompted flow.")
+            return 
+        }
+        
+        // 3. Store the image
+        self.promptedScreenshotImage = image
+        print("Image captured for prompting. Ready for prompt UI.")
+
+        // TODO: Implement prompt UI display
+        // Show the prompt input window
+        DispatchQueue.main.async {
+            self.showingPromptInputWindow = true
+        }
+
+        // TODO: Clear pasteboard after getting the image?
+    }
+    
+    // Function to handle prompt submission and initiate API call
+    func submitPromptForProcessing(prompt: String) {
+        guard let imageToProcess = promptedScreenshotImage else {
+            print("Error: No image available for processing.")
+            // Optionally show an error to the user (e.g., set errorMessage)
+            return
+        }
+        
+        // Store the prompt
+        self.userPrompt = prompt
+        
+        // Set loading state and reset previous response
+        DispatchQueue.main.async {
+            self.isLoadingResponse = true
+            self.apiResponse = nil
+            // Show the chat window (we'll add this window definition next)
+            self.showingChatResponseWindow = true 
+        }
+        
+        print("Submitting prompt: \(prompt) with image.")
+        
+        // Call Gemini API
+        geminiAPIClient.formatImageText(image: imageToProcess, prompt: prompt) { [weak self] result in
+            guard let self = self else { return }
+            
+            DispatchQueue.main.async {
+                self.isLoadingResponse = false
+                switch result {
+                case .success(let responseText):
+                    self.apiResponse = responseText
+                    print("Gemini API success for prompted screenshot.")
+                    // Maybe clear the promptedScreenshotImage here if no longer needed?
+                    // self.promptedScreenshotImage = nil 
+                case .failure(let error):
+                    // Handle API error (e.g., display in the chat window or separate error UI)
+                    self.apiResponse = "Error: \(error.localizedDescription)" // Display error in response area for now
+                    print("Gemini API error for prompted screenshot: \(error.localizedDescription)")
+                    self.displayError(error) // Optionally use existing error display logic
+                }
+            }
         }
     }
 }

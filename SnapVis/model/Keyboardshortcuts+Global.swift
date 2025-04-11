@@ -10,6 +10,7 @@ import KeyboardShortcuts
 
 extension KeyboardShortcuts.Name {
     static let screenshotCapture = Self("screenshotCapture", default:.init(.three, modifiers: [.option, .command]))
+    static let promptedScreenshotCapture = Self("promptedScreenshotCapture", default: .init(.two, modifiers: [.command]))
 }
 
 
