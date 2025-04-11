@@ -35,10 +35,6 @@ struct SnapVisApp: App {
             Image("menubar_icon")
         }
         
-//        WindowGroup("Screenshots", id: "main") {
-//            ContentView(vm: vm)
-//        }
-        .defaultSize(width: 800, height: 600)
         
         Settings {
             SettingsView()

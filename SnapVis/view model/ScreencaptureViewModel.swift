@@ -13,168 +13,10 @@ import AppKit
 import PostHog
 
 // MARK: - Banner View
-fileprivate struct BannerView: View {
-    let message: String
-    let isLoading: Bool
-    
-    @Environment(\.colorScheme) private var colorScheme
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            // Use a fixed-size frame for the icon area to ensure consistent sizing
-            Group {
-                if isLoading {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                } else {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                }
-            }
-            .frame(width: 16, height: 16)
-            
-            Text(message)
-                .font(.system(size: 13, weight: .semibold))
-                .lineLimit(1)
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-        }
-        .padding(.vertical, 10) // Increased vertical padding for consistent height
-        .padding(.horizontal, 16)
-        .frame(height: 36) // Fixed height for both states
-        .background(
-            Capsule()
-                .fill(colorScheme == .dark ? Color(white: 0.1, opacity: 0.9) : Color(white: 0.95, opacity: 0.9))
-                .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
-        )
-    }
-}
+// ... existing code ...
 
 // MARK: - Banner Manager
-class BannerWindowController {
-    private var window: NSWindow?
-    private var isVisible = false
-    private var hideTimer: Timer?
-    
-    // Store the Y position to ensure consistency
-    private var bannerYPosition: CGFloat = 0
-    
-    static let shared = BannerWindowController()
-    
-    private init() {}
-    
-    func showBanner(message: String, isLoading: Bool, duration: TimeInterval = 2.5) {
-        hideTimer?.invalidate()
-        
-        DispatchQueue.main.async {
-            // Create banner content
-            let bannerView = BannerView(message: message, isLoading: isLoading)
-            let hostingController = NSHostingController(rootView: bannerView)
-            
-            // Size the view first
-            let size = NSSize(width: hostingController.view.fittingSize.width, height: 36) // Force height
-            
-            // Create window if needed or update existing
-            if self.window == nil {
-                let window = NSWindow(
-                    contentRect: NSRect(x: 0, y: 0, width: size.width, height: 36), // Force height
-                    styleMask: [.borderless],
-                    backing: .buffered,
-                    defer: false
-                )
-                window.backgroundColor = .clear
-                window.isOpaque = false
-                window.hasShadow = false
-                window.level = .statusBar
-                window.collectionBehavior = [.canJoinAllSpaces]
-                window.ignoresMouseEvents = true
-                window.alphaValue = 0.0
-                window.hidesOnDeactivate = false
-                
-                self.window = window
-                
-                // Calculate and store Y position on first creation
-                if let screen = NSScreen.main {
-                    self.bannerYPosition = screen.frame.height - 36 - 75 // 75px from top
-                }
-            }
-            
-            // Update content
-            self.window?.contentViewController = hostingController
-            self.window?.setContentSize(size)
-            
-            // Position at stored Y position
-            if let screen = NSScreen.main {
-                let x = (screen.frame.width - size.width) / 2
-                self.window?.setFrameOrigin(NSPoint(x: x, y: self.bannerYPosition))
-            }
-            
-            // Show window
-            self.window?.orderFront(nil)
-            self.isVisible = true
-            
-            // Animate appearance
-            NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.3
-                context.timingFunction = CAMediaTimingFunction(name: .easeOut)
-                self.window?.animator().alphaValue = 1.0
-            }
-            
-            // Schedule hiding
-            if !isLoading {
-                self.hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
-                    self?.hideBanner()
-                }
-            }
-        }
-    }
-    
-    func updateBanner(message: String, isLoading: Bool) {
-        DispatchQueue.main.async {
-            if self.isVisible, let window = self.window {
-                // Create new banner view with updated message
-                let bannerView = BannerView(message: message, isLoading: isLoading)
-                let hostingController = NSHostingController(rootView: bannerView)
-                
-                // Update window content with forced height
-                let size = NSSize(width: hostingController.view.fittingSize.width, height: 36)
-                window.contentViewController = hostingController
-                window.setContentSize(size)
-                
-                // Recenter horizontally but keep the same Y position
-                if let screen = NSScreen.main {
-                    let x = (screen.frame.width - size.width) / 2
-                    window.setFrameOrigin(NSPoint(x: x, y: self.bannerYPosition))
-                }
-                
-                // If not loading, start hide timer
-                if !isLoading {
-                    self.hideTimer?.invalidate()
-                    self.hideTimer = Timer.scheduledTimer(withTimeInterval: 2.5, repeats: false) { [weak self] _ in
-                        self?.hideBanner()
-                    }
-                }
-            } else {
-                // If not visible, show it
-                self.showBanner(message: message, isLoading: isLoading)
-            }
-        }
-    }
-    
-    func hideBanner() {
-        guard isVisible, let window = self.window else { return }
-        
-        DispatchQueue.main.async {
-            NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.4
-                context.timingFunction = CAMediaTimingFunction(name: .easeIn)
-                window.animator().alphaValue = 0.0
-            }, completionHandler: {
-                window.orderOut(nil)
-                self.isVisible = false
-            })
-        }
-    }
-}
+// ... existing code ...
 
 class ScreencaptureViewModel: ObservableObject {
     
@@ -306,14 +148,12 @@ class ScreencaptureViewModel: ObservableObject {
     
     // Vision OCR as fallback
     private func performOCR(on image: NSImage) {
-        // Convert NSImage to CGImage for Vision processing
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
             print("Failed to create CGImage from NSImage")
             BannerWindowController.shared.updateBanner(message: "Failed to process image", isLoading: false)
             return
         }
         
-        // Create a new Vision request to recognize text
         let request = VNRecognizeTextRequest { [weak self] (request, error) in
             guard let self = self else { return }
             
@@ -323,33 +163,22 @@ class ScreencaptureViewModel: ObservableObject {
                 return
             }
             
-            // Process the results
             guard let observations = request.results as? [VNRecognizedTextObservation] else { return }
             
-            // Extract recognized text
             let recognizedText = observations.compactMap { observation in
                 observation.topCandidates(1).first?.string
             }.joined(separator: "\n")
             
-            // Update the UI on the main thread
             DispatchQueue.main.async {
                 self.lastRecognizedText = recognizedText
-                
-                // Copy the recognized text to clipboard
                 self.copyToClipboard(text: recognizedText)
-                
-                // Update banner to show success
                 BannerWindowController.shared.updateBanner(message: "Copied to clipboard", isLoading: false)
             }
         }
         
-        // Configure the text recognition request
         request.recognitionLevel = VNRequestTextRecognitionLevel.accurate
-        
-        // Create a request handler
         let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
         
-        // Perform the request
         do {
             try requestHandler.perform([request])
         } catch {
@@ -358,15 +187,14 @@ class ScreencaptureViewModel: ObservableObject {
         }
     }
     
-    func copyToClipboard(text: String) {
+    private func copyToClipboard(text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
-        
         print("Text copied to clipboard: \(text)")
     }
     
-    func displayError(_ error: Error) {
+    private func displayError(_ error: Error) {
         var message = "Error formatting text: "
         
         switch error {
@@ -401,54 +229,6 @@ class ScreencaptureViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.errorMessage = message
             self.showError = true
-        }
-    }
-    
-    func formatTextUsingAI(for image: NSImage) {
-        guard let lastIndex = images.lastIndex(of: image) else {
-            print("Image not found")
-            return
-        }
-        
-        DispatchQueue.main.async {
-            self.isFormatting = true
-            self.errorMessage = ""
-            self.showError = false
-        }
-        
-        // Show banner for formatting
-        BannerWindowController.shared.showBanner(message: "Formatting with Gemini AI...", isLoading: true)
-        
-        // Default prompt for formatting text
-        let prompt = "Please analyze this image and extract all the text. " +
-                    "Format the text properly maintaining the structure, layout, indentation and heading heirarchy." +
-                    "For code snippets, preserve the syntax highlighting and indentation, and remove the line numbers and other UI elements, only keep the actual code." +
-                    "For diagrams, convert them to mermaid format." +
-                    "For tables, maintain the tabular format. " +
-                    "Do not give any explanation or any extra information. Only the text content."
-        
-        geminiAPIClient.formatImageText(image: image, prompt: prompt) { [weak self] result in
-            guard let self = self else { return }
-            
-            DispatchQueue.main.async {
-                self.isFormatting = false
-                
-                switch result {
-                case .success(let formattedText):
-                    self.lastRecognizedText = formattedText
-                    self.copyToClipboard(text: formattedText)
-                    
-                    // Update banner to show success
-                    BannerWindowController.shared.updateBanner(message: "Formatted text copied to clipboard", isLoading: false)
-                    
-                case .failure(let error):
-                    print("Error formatting text: \(error.localizedDescription)")
-                    self.displayError(error)
-                    
-                    // Update banner to show error
-                    BannerWindowController.shared.updateBanner(message: "Error formatting text", isLoading: false)
-                }
-            }
         }
     }
 }
